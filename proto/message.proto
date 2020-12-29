@@ -1,0 +1,92 @@
+syntax = "proto3";
+package business;
+option go_package = "api/business";
+
+import "common.proto";
+
+
+message Email{
+
+  message SenderCreateReq{
+    string email_address = 1; //发件人邮件地址
+  }
+
+  message SenderListReq{
+    int64 page_num = 1; //页码 从1开始
+    int64 page_size = 2; //页面大小
+  }
+
+  message ReceiverCreateReq{
+    string email_address = 1; //收件人邮件地址
+    bool marked = 2; //星标收件人
+  }
+
+  message ReceiverListRsp{
+    int64 page_num = 1; //页码 从1开始
+    int64 page_size = 2; //页面大小
+  }
+
+  message EmailCreateReq{
+    string subject = 1; //主题
+    string content = 2; //内容
+    //附件暂不支持
+  }
+
+  message EmailUpdateReq{
+    int64 email_id = 1; //邮件ID
+    string subject = 2; //邮件主题
+    string content = 3; //邮件内容，需要替换的模板变量用${}表示
+    bool trash = 4;    //移入垃圾桶
+  }
+
+  message EmailDeleteReq{
+    int64 email_id = 1; //邮件ID
+  }
+
+  message EmailListReq{
+    bool trash = 1;
+    int64 page_num = 2;
+    int64 page_size = 3;
+  }
+
+  message EmailListRsp{
+    message EmailListData{
+      message EmailItem{
+        int64 email_id = 1;
+        string subject = 2;
+        string content = 3;
+      }
+      repeated EmailItem email_list = 1;
+      int64 count = 2;
+    }
+    ErrorCode ret = 1;
+    string msg = 2;
+    EmailListData data = 3;
+  }
+
+  message EmailSendReq{
+    string sender_id = 1; //发件人ID
+    string receiver_id = 2; //收件人ID
+    string email_id = 3; //邮件ID
+    string email_meta = 4; //邮件模板变量（json表示）
+  }
+
+}
+
+service MessageService{
+  // 创建发件人
+  rpc SenderCreate(Email.SenderCreateReq) returns (CommonRsp);
+  // 创建收件人
+  rpc ReceiverCreate(Email.ReceiverCreateReq) returns (CommonRsp);
+  // 创建邮件
+  rpc EmailCreate(Email.EmailCreateReq) returns (CommonRsp);
+  // 更新邮件
+  rpc EmailUpdate(Email.EmailUpdateReq) returns (CommonRsp);
+  // 删除邮件
+  rpc EmailDelete(Email.EmailDeleteReq) returns (CommonRsp);
+  // 罗列邮件
+  rpc EmailList(Email.EmailListReq) returns (Email.EmailListRsp);
+  // 发送邮件
+  rpc EmailSend(Email.EmailSendReq) returns (CommonRsp);
+}
+
